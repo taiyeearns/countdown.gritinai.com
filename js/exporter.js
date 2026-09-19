@@ -35,12 +35,22 @@ class FlyerExporter {
   async exportFlyer(options = {}) {
     const profile = options.profile || {};
     const status = options.status || (window.countdownEngine ? window.countdownEngine.getStatus() : { days: 8, isEventDay: false, isPast: false });
+    
+    // 2x Super-Resolution Export (2160 x 2700 Ultra-HD) for razor-sharp typography and crystal clear photos
+    const scaleFactor = 2;
     const width = 1080;
     const height = 1350;
 
-    this.canvas.width = width;
-    this.canvas.height = height;
+    this.canvas.width = width * scaleFactor;
+    this.canvas.height = height * scaleFactor;
     const ctx = this.ctx;
+
+    // Scale canvas context for 2x pixel density
+    ctx.setTransform(scaleFactor, 0, 0, scaleFactor, 0, 0);
+
+    // High-quality bicubic image smoothing across canvas
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
     // 1. Ensure fonts are fully loaded before rendering
     if (document.fonts) {
@@ -214,6 +224,8 @@ class FlyerExporter {
         const posX = centerX - (renderW / 2);
         const posY = centerY - (renderH / 2);
 
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, posX, posY, renderW, renderH);
       } catch (err) {
         this.drawPlaceholder(ctx, centerX, centerY, photoSize * 0.4);
