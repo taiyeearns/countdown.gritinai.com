@@ -78,12 +78,14 @@
         <div class="form-field">
           <label for="nameInput" class="field-label">YOUR NAME <span style="color: #437EF7;">*</span></label>
           <input type="text" id="nameInput" class="field-input" placeholder="GritinAI Volunteer" maxlength="40" autocomplete="name" required>
+          <span id="nameError" class="field-error-msg hidden">Please enter your name</span>
         </div>
 
         <!-- Role Input -->
         <div class="form-field">
-          <label for="roleInput" class="field-label">ROLE / TITLE (OPTIONAL)</label>
-          <input type="text" id="roleInput" class="field-input" placeholder="Frontend Developer, Media Team, Protocol" maxlength="45">
+          <label for="roleInput" class="field-label">VOLUNTEER ROLE <span style="color: #437EF7;">*</span></label>
+          <input type="text" id="roleInput" class="field-input" placeholder="Volunteer Role" maxlength="45" required>
+          <span id="roleError" class="field-error-msg hidden">Please enter your volunteer role</span>
         </div>
 
         <!-- Action Button -->
@@ -136,7 +138,7 @@
             <div class="flyer-details-block">
               <div class="flyer-sub-tag">VOLUNTEER</div>
               <div id="mockName" class="flyer-name">GritinAI Volunteer</div>
-              <div id="mockRole" class="flyer-role">FRONTEND DEVELOPER</div>
+              <div id="mockRole" class="flyer-role"></div>
 
               <!-- Plain White Countdown Text -->
               <div id="mockCountdownBadgeText" class="flyer-countdown-text">8 DAYS TO GO</div>

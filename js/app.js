@@ -19,6 +19,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const resetZoomBtn = document.getElementById('resetZoomBtn');
   const nameInput = document.getElementById('nameInput');
   const roleInput = document.getElementById('roleInput');
+  const nameError = document.getElementById('nameError');
+  const roleError = document.getElementById('roleError');
   const generateBtn = document.getElementById('generateBtn');
 
   // Preview elements
@@ -40,6 +42,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     photoDataUrl: null,
     zoom: 1.0
   };
+
+  // Validation function: checks both fields, displays inline error message, and focuses incomplete input
+  function validateInputs() {
+    let isValid = true;
+    let firstInvalid = null;
+
+    const nameVal = (nameInput.value || '').trim();
+    const roleVal = (roleInput.value || '').trim();
+
+    if (!nameVal) {
+      nameInput.classList.add('input-error');
+      if (nameError) {
+        nameError.textContent = 'Please enter your name';
+        nameError.classList.remove('hidden');
+      }
+      isValid = false;
+      if (!firstInvalid) firstInvalid = nameInput;
+    } else {
+      nameInput.classList.remove('input-error');
+      if (nameError) nameError.classList.add('hidden');
+    }
+
+    if (!roleVal) {
+      roleInput.classList.add('input-error');
+      if (roleError) {
+        roleError.textContent = 'Please enter your volunteer role';
+        roleError.classList.remove('hidden');
+      }
+      isValid = false;
+      if (!firstInvalid) firstInvalid = roleInput;
+    } else {
+      roleInput.classList.remove('input-error');
+      if (roleError) roleError.classList.add('hidden');
+    }
+
+    if (firstInvalid) {
+      firstInvalid.focus();
+      firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    return isValid;
+  }
 
   // 1. Initial Countdown Sync
   function updateCountdownUI() {
@@ -107,8 +151,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const nameVal = (nameInput.value || currentProfile.name || 'GritinAI Volunteer').trim();
     mockName.textContent = nameVal;
 
-    const roleVal = (roleInput.value || currentProfile.role || 'Frontend Developer').trim();
-    mockRole.textContent = roleVal.toUpperCase();
+    // Role only displays if entered; never shows dummy text or placeholder
+    const roleVal = (roleInput.value || currentProfile.role || '').trim();
+    mockRole.textContent = roleVal ? roleVal.toUpperCase() : '';
 
     if (currentProfile.photoDataUrl) {
       mockPhotoImg.src = currentProfile.photoDataUrl;
@@ -122,8 +167,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateCountdownUI();
   }
 
-  // Live input synchronization
+  // Live input synchronization with automatic error clearing
   nameInput.addEventListener('input', () => {
+    if (nameInput.value.trim().length > 0) {
+      nameInput.classList.remove('input-error');
+      if (nameError) nameError.classList.add('hidden');
+    }
     currentProfile.name = nameInput.value;
     if (nameInput.value.trim().length > 0 || currentProfile.photoDataUrl) {
       showLiveFlyer();
@@ -132,6 +181,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   roleInput.addEventListener('input', () => {
+    if (roleInput.value.trim().length > 0) {
+      roleInput.classList.remove('input-error');
+      if (roleError) roleError.classList.add('hidden');
+    }
     currentProfile.role = roleInput.value;
     syncMockupPreview();
   });
@@ -208,9 +261,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 6. Generate Button Action
   generateBtn.addEventListener('click', async () => {
-    if (!nameInput.value.trim()) {
-      alert('Please enter your name — this is required to personalize your flyer.');
-      nameInput.focus();
+    if (!validateInputs()) {
       return;
     }
 
@@ -229,11 +280,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 7. Download Action (1:1 DOM capture into high-DPI PNG)
   downloadBtn.addEventListener('click', async () => {
-    if (!nameInput.value.trim() && !currentProfile.name.trim()) {
-      alert('Please enter your name — this is required to generate your flyer.');
-      nameInput.focus();
+    if (!validateInputs()) {
       return;
     }
+
+    currentProfile.name = nameInput.value.trim();
+    currentProfile.role = roleInput.value.trim();
+    currentProfile.zoom = parseFloat(photoZoomInput.value) || 1.0;
 
     downloadBtn.disabled = true;
     const originalText = downloadBtn.textContent;
@@ -263,6 +316,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 8. Share Button
   shareBtn.addEventListener('click', async () => {
+    if (!validateInputs()) {
+      return;
+    }
+
+    currentProfile.name = nameInput.value.trim();
+    currentProfile.role = roleInput.value.trim();
+    currentProfile.zoom = parseFloat(photoZoomInput.value) || 1.0;
     try {
       const status = window.countdownEngine.getStatus();
       const dataUrl = await window.flyerExporter.exportFlyer({

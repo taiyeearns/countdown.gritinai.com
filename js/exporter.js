@@ -282,12 +282,14 @@ class FlyerExporter {
     ctx.letterSpacing = '-1px';
     ctx.fillText(name, centerX, 855);
 
-    // 3. Volunteer Role (Space Mono, non-bold, #8F9EAF)
-    const role = (profile && profile.role ? profile.role.trim() : 'FRONTEND DEVELOPER').toUpperCase();
-    ctx.font = '400 28px "Space Mono", monospace';
-    ctx.fillStyle = '#8F9EAF';
-    ctx.letterSpacing = '3px';
-    ctx.fillText(role, centerX, 905);
+    // 3. Volunteer Role (Space Mono, non-bold, #8F9EAF - only drawn if entered)
+    const role = (profile && profile.role ? profile.role.trim() : '').toUpperCase();
+    if (role) {
+      ctx.font = '400 28px "Space Mono", monospace';
+      ctx.fillStyle = '#8F9EAF';
+      ctx.letterSpacing = '3px';
+      ctx.fillText(role, centerX, 905);
+    }
 
     // 4. Plain White Countdown Text (Space Grotesk, bold white, prominent with more space)
     const countdownText = status.isEventDay
