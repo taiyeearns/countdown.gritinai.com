@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GritinAI Connect 2.0 — Volunteer Countdown Flyer Generator</title>
+  <meta name="description" content="Personalized daily countdown flyer for GritinAI Connect 2.0 volunteers.">
+
+  <!-- Google Fonts: Space Grotesk & Space Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/png" href="assets/connect2.png">
+</head>
+<body>
+
+  <!-- Top Left Logo Only -->
+  <header class="header-bar">
+    <a href="#" class="brand-logo-link">
+      <img src="assets/connect2.png" alt="GritinAI Connect 2.0 Logo" class="brand-logo-img">
+    </a>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-wrapper">
+
+    <!-- Header Intro -->
+    <section class="page-intro">
+      <div class="category-pill">
+        <span class="status-dot"></span>
+        VOLUNTEER COUNTDOWN · GRITINAI CONNECT 2.0
+      </div>
+      <h1 class="main-heading">Show them you're ready</h1>
+      <p class="main-subheading">
+        Generate your personalized countdown flyer. Come back each day for your updated countdown to share on your WhatsApp status and stories!
+      </p>
+    </section>
+
+    <!-- Return User Notice (Shown if returning visitor) -->
+    <div id="returnBanner" class="return-banner hidden">
+      <div class="return-banner-text">
+        Welcome back, <strong id="returnName">Volunteer</strong>! Today's flyer is ready to download.
+      </div>
+      <button id="resetProfileBtn" class="btn-action" style="width: auto; padding: 6px 14px; font-size: 12px;" type="button">
+        Reset Details
+      </button>
+    </div>
+
+    <!-- Side-by-Side 2-Column Generator Grid -->
+    <div class="generator-grid">
+
+      <!-- Left Column: Inputs & Dropzone -->
+      <section class="form-column">
+        <!-- Photo Dropzone -->
+        <div id="dropzone" class="dropzone-box">
+          <div id="dropzoneContent" class="dropzone-content">
+            <span class="dropzone-main-text">CLICK OR DROP A PHOTO</span>
+            <span class="dropzone-sub-text">Square photos work best for status & stories</span>
+          </div>
+          <!-- Uploaded Image Element -->
+          <img id="dropzonePreviewImg" class="dropzone-preview-img hidden" alt="Uploaded photo">
+          <div id="dropzoneChangeOverlay" class="dropzone-change-overlay hidden">
+            <span class="dropzone-change-text">Change photo</span>
+          </div>
+        </div>
+        <input type="file" id="photoFileInput" accept="image/png, image/jpeg, image/webp">
+
+        <!-- Photo Zoom Slider & Default Button -->
+        <div id="photoZoomControl" class="photo-zoom-control hidden">
+          <label for="photoZoom">Photo Zoom</label>
+          <input type="range" id="photoZoom" min="0.8" max="2.0" step="0.05" value="1.0">
+          <button type="button" id="resetZoomBtn" class="btn-reset-zoom" title="Reset to default fill">Default</button>
+        </div>
+
+        <!-- Name Input -->
+        <div class="form-field">
+          <label for="nameInput" class="field-label">YOUR NAME <span style="color: #437EF7;">*</span></label>
+          <input type="text" id="nameInput" class="field-input" placeholder="GritinAI Volunteer" maxlength="40" autocomplete="name" required>
+        </div>
+
+        <!-- Role Input -->
+        <div class="form-field">
+          <label for="roleInput" class="field-label">ROLE / TITLE (OPTIONAL)</label>
+          <input type="text" id="roleInput" class="field-input" placeholder="Frontend Developer, Media Team, Protocol" maxlength="45">
+        </div>
+
+        <!-- Action Button -->
+        <button type="button" id="generateBtn" class="btn-action btn-primary">
+          generate_flyer()
+        </button>
+      </section>
+
+      <!-- Right Column: Flyer Preview -->
+      <section class="preview-column">
+        <!-- Preview Box Container (Portrait 4:5, Fixed Dimensions) -->
+        <div id="previewBoxContainer" class="preview-box-container">
+          <!-- Placeholder when empty -->
+          <div id="emptyPlaceholder" class="empty-preview-placeholder">
+            PREVIEW APPEARS HERE
+          </div>
+
+          <!-- Active Flyer Mockup -->
+          <div id="liveFlyerMockup" class="live-flyer hidden">
+            <!-- Film Grain Overlay -->
+            <div class="flyer-grain-layer"></div>
+
+            <!-- Background Geometric Circles -->
+            <div class="flyer-bg-circles">
+              <div class="bg-circle circle-tl-blue"></div>
+              <div class="bg-circle circle-tr-white"></div>
+              <div class="bg-circle circle-bl-blue"></div>
+              <div class="bg-circle circle-bl-white"></div>
+              <div class="bg-circle circle-br-white"></div>
+            </div>
+
+            <!-- Top Header of Flyer -->
+            <div class="flyer-top-header">
+              <img src="assets/connect2.png" alt="GritinAI Connect 2.0" class="flyer-brand-logo">
+              <span class="flyer-top-tag">CONNECT 2.0</span>
+            </div>
+
+            <!-- Central Graphic: 4-Lobe Blue Shape + Photo -->
+            <div class="flyer-graphic-stage">
+              <div class="flyer-blue-shape"></div>
+              <div class="flyer-photo-frame">
+                <!-- Viewfinder brackets -->
+                <div class="viewfinder-corner top-left"></div>
+                <div class="viewfinder-corner top-right"></div>
+                <img id="mockPhotoImg" class="flyer-frame-img" src="assets/placeholder.svg" alt="Volunteer Photo">
+              </div>
+            </div>
+
+            <!-- Volunteer Details & Plain Countdown Text -->
+            <div class="flyer-details-block">
+              <div class="flyer-sub-tag">VOLUNTEER</div>
+              <div id="mockName" class="flyer-name">GritinAI Volunteer</div>
+              <div id="mockRole" class="flyer-role">FRONTEND DEVELOPER</div>
+
+              <!-- Plain White Countdown Text -->
+              <div id="mockCountdownBadgeText" class="flyer-countdown-text">8 DAYS TO GO</div>
+
+              <!-- Venue and Date (Shifted slightly lower, close to bottom line) -->
+              <div class="flyer-venue-line">
+                26TH SEPT, 2026 &nbsp;·&nbsp; Victor Uwaifo Hub, Benin City
+              </div>
+            </div>
+
+            <!-- Flyer Bottom Line -->
+            <div class="flyer-bottom-footer">
+              <div class="flyer-footer-label">JOIN ME AT GRITINAI CONNECT</div>
+              <div class="flyer-footer-link">gritinaiconnect.gritinai.com/register</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview Controls: Download & Share -->
+        <div class="preview-controls">
+          <!-- Download Button -->
+          <button type="button" id="downloadBtn" class="btn-action btn-primary">
+            Download Flyer (.PNG)
+          </button>
+
+          <div class="action-row">
+            <button type="button" id="shareBtn" class="btn-action">
+              Share
+            </button>
+            <button type="button" id="clearBtn" class="btn-action">
+              Clear
+            </button>
+          </div>
+
+          <!-- Quick Day Simulation (Default: Live Date Calculation) -->
+          <div class="day-override-bar">
+            <label for="dayOverrideSelect">PREVIEW DAY COUNT:</label>
+            <select id="dayOverrideSelect" class="day-override-select">
+              <option value="auto" selected>Live Date Calculation</option>
+              <option value="9">9 Days to Go</option>
+              <option value="8">8 Days to Go</option>
+              <option value="7">7 Days to Go</option>
+              <option value="3">3 Days to Go</option>
+              <option value="1">1 Day to Go</option>
+              <option value="0">Day 0 (Today's the Day!)</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Simple Footer -->
+  <footer class="site-footer">
+    GritinAI Connect 2.0 · September 26, 2026 · Victor Uwaifo Hub, Benin City
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/countdown.js"></script>
+  <script src="js/html-to-image.min.js"></script>
+  <script src="js/exporter.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

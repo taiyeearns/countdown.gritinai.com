@@ -1,0 +1,13 @@
+{
+  "name": "gritinai-countdown",
+  "version": "1.0.0",
+  "description": "GritinAI Connect 2.0 - Volunteer Countdown Flyer Generator",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["gritinai", "countdown", "volunteer"],
+  "author": "",
+  "license": "MIT"
+}
