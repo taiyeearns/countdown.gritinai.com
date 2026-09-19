@@ -24,7 +24,7 @@ class FlyerExporter {
 
     for (let i = 0; i < buffer.length; i++) {
       const v = Math.floor(Math.random() * 255);
-      buffer[i] = (5 << 24) | (v << 16) | (v << 8) | v;
+      buffer[i] = (2 << 24) | (v << 16) | (v << 8) | v;
     }
     nCtx.putImageData(imgData, 0, 0);
 
@@ -98,36 +98,36 @@ class FlyerExporter {
     ctx.save();
 
     // Top-Left Blue Circle
-    ctx.strokeStyle = 'rgba(67, 126, 247, 0.15)';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(67, 126, 247, 0.04)';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.arc(-80, height * 0.08, 520, 0, Math.PI * 2);
     ctx.stroke();
 
     // Top-Right Light White Circle
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.015)';
+    ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.arc(width + 80, height * 0.12, 540, 0, Math.PI * 2);
     ctx.stroke();
 
     // Bottom-Left Outer Blue Circle
-    ctx.strokeStyle = 'rgba(67, 126, 247, 0.12)';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(67, 126, 247, 0.035)';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.arc(width * 0.05, height * 0.68, 620, 0, Math.PI * 2);
     ctx.stroke();
 
     // Bottom-Left Inner White Circle
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
-    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.012)';
+    ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.arc(width * 0.05, height * 0.68, 440, 0, Math.PI * 2);
     ctx.stroke();
 
     // Bottom-Right Faint White Circle
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.01)';
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.arc(width + 60, height * 0.88, 580, 0, Math.PI * 2);
     ctx.stroke();

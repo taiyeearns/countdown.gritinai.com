@@ -434,17 +434,17 @@ body {
   overflow: hidden;
 }
 
-/* Tactile Film Grain Layer */
+/* Tactile Film Grain Layer - very very almost invisible */
 .flyer-grain-layer {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.02;
+  opacity: 0.006;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
-/* Blue & Light-White Geometric Line Circles at the Edges */
+/* Blue & Light-White Geometric Line Circles at the Edges - barely perceptible */
 .flyer-bg-circles {
   position: absolute;
   inset: 0;
@@ -462,7 +462,7 @@ body {
   height: 440px;
   top: -140px;
   left: -140px;
-  border: 1.5px solid rgba(67, 126, 247, 0.15);
+  border: 1px solid rgba(67, 126, 247, 0.04);
 }
 
 .circle-tr-white {
@@ -470,7 +470,7 @@ body {
   height: 420px;
   top: -80px;
   right: -140px;
-  border: 1.2px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.015);
 }
 
 .circle-bl-blue {
@@ -478,7 +478,7 @@ body {
   height: 500px;
   bottom: 40px;
   left: -180px;
-  border: 1.5px solid rgba(67, 126, 247, 0.12);
+  border: 1px solid rgba(67, 126, 247, 0.035);
 }
 
 .circle-bl-white {
@@ -486,7 +486,7 @@ body {
   height: 340px;
   bottom: 110px;
   left: -100px;
-  border: 1.2px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.012);
 }
 
 .circle-br-white {
@@ -494,7 +494,7 @@ body {
   height: 480px;
   bottom: -120px;
   right: -160px;
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.01);
 }
 
 /* Top Header of Flyer */
