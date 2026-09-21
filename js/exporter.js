@@ -212,6 +212,8 @@ class FlyerExporter {
       try {
         const img = await this.loadImage(profile.photoDataUrl);
         const zoom = profile.zoom || 1.0;
+        const offsetX = profile.offsetX || 0;
+        const offsetY = profile.offsetY || 0;
 
         const scaleX = frameW / img.width;
         const scaleY = frameH / img.height;
@@ -221,8 +223,11 @@ class FlyerExporter {
         const renderW = img.width * scale;
         const renderH = img.height * scale;
 
-        const posX = centerX - (renderW / 2);
-        const posY = centerY - (renderH / 2);
+        const shiftX = offsetX * frameW;
+        const shiftY = offsetY * frameH;
+
+        const posX = centerX - (renderW / 2) + shiftX;
+        const posY = centerY - (renderH / 2) + shiftY;
 
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';

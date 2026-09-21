@@ -12,7 +12,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const dropzone = document.getElementById('dropzone');
   const dropzoneContent = document.getElementById('dropzoneContent');
   const dropzonePreviewImg = document.getElementById('dropzonePreviewImg');
-  const dropzoneChangeOverlay = document.getElementById('dropzoneChangeOverlay');
+  const dropzoneActiveOverlay = document.getElementById('dropzoneActiveOverlay');
+  const adjustCropBtn = document.getElementById('adjustCropBtn');
+  const changePhotoBtn = document.getElementById('changePhotoBtn');
   const photoFileInput = document.getElementById('photoFileInput');
   const photoZoomControl = document.getElementById('photoZoomControl');
   const photoZoomInput = document.getElementById('photoZoom');
@@ -35,11 +37,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   const clearBtn = document.getElementById('clearBtn');
   const dayOverrideSelect = document.getElementById('dayOverrideSelect');
 
+  // WhatsApp-Style Crop Modal Elements
+  const cropModal = document.getElementById('cropModal');
+  const cropModalBackdrop = document.getElementById('cropModalBackdrop');
+  const cropCloseBtn = document.getElementById('cropCloseBtn');
+  const cropCancelBtn = document.getElementById('cropCancelBtn');
+  const cropDefaultBtn = document.getElementById('cropDefaultBtn');
+  const cropDoneBtn = document.getElementById('cropDoneBtn');
+  const cropStage = document.getElementById('cropStage');
+  const cropSourceImg = document.getElementById('cropSourceImg');
+  const cropBox = document.getElementById('cropBox');
+
   // State
+  let rawPhotoDataUrl = null;
   let currentProfile = {
     name: '',
     role: '',
     photoDataUrl: null,
+    rawPhotoDataUrl: null,
     zoom: 1.0
   };
 
@@ -106,7 +121,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 2. Load Stored Profile
   async function loadInitialProfile() {
-    // Default: live date calculation
     window.countdownEngine.setOverrideDays(null);
     updateCountdownUI();
 
@@ -120,10 +134,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         photoZoomInput.value = currentProfile.zoom || 1.0;
 
         if (currentProfile.photoDataUrl) {
+          dropzone.classList.add('has-photo');
           dropzonePreviewImg.src = currentProfile.photoDataUrl;
+          dropzonePreviewImg.style.transform = `scale(${currentProfile.zoom || 1.0})`;
           dropzonePreviewImg.classList.remove('hidden');
           dropzoneContent.classList.add('hidden');
-          dropzoneChangeOverlay.classList.remove('hidden');
+          if (dropzoneActiveOverlay) {
+            dropzoneActiveOverlay.classList.remove('hidden');
+          }
           photoZoomControl.classList.remove('hidden');
         }
 
@@ -151,7 +169,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const nameVal = (nameInput.value || currentProfile.name || 'GritinAI Volunteer').trim();
     mockName.textContent = nameVal;
 
-    // Role only displays if entered; never shows dummy text or placeholder
     const roleVal = (roleInput.value || currentProfile.role || '').trim();
     mockRole.textContent = roleVal ? roleVal.toUpperCase() : '';
 
@@ -189,10 +206,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     syncMockupPreview();
   });
 
+  // Post-crop Photo Zoom Slider
   photoZoomInput.addEventListener('input', () => {
-    currentProfile.zoom = parseFloat(photoZoomInput.value);
+    currentProfile.zoom = parseFloat(photoZoomInput.value) || 1.0;
     if (dropzonePreviewImg) {
       dropzonePreviewImg.style.transform = `scale(${currentProfile.zoom})`;
+    }
+    if (mockPhotoImg && currentProfile.photoDataUrl) {
+      mockPhotoImg.style.transform = `scale(${currentProfile.zoom})`;
     }
     syncMockupPreview();
   });
@@ -205,12 +226,252 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (dropzonePreviewImg) {
         dropzonePreviewImg.style.transform = 'scale(1)';
       }
+      if (mockPhotoImg && currentProfile.photoDataUrl) {
+        mockPhotoImg.style.transform = 'scale(1)';
+      }
       syncMockupPreview();
     });
   }
 
-  // 5. Photo Upload Handling
-  dropzone.addEventListener('click', () => photoFileInput.click());
+  // =========================================================================
+  // WhatsApp-Style Photo Cropper Logic
+  // =========================================================================
+  let cropState = {
+    imgW: 0,
+    imgH: 0,
+    size: 0,
+    x: 0,
+    y: 0
+  };
+
+  function openCropModal(imageUrl) {
+    if (!imageUrl) return;
+    rawPhotoDataUrl = imageUrl;
+
+    // Reset inline stage dimensions
+    cropStage.style.width = '';
+    cropStage.style.height = '';
+
+    cropModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    // Preload image to ensure natural dimensions exist and image is cached
+    const temp = new Image();
+    temp.onload = () => {
+      cropSourceImg.src = imageUrl;
+      // Double rAF ensures modal display: flex has painted and image has layout dimensions
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          initCropBox();
+        });
+      });
+    };
+    temp.src = imageUrl;
+  }
+
+  function closeCropModal() {
+    cropModal.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  function initCropBox(retry = 0) {
+    const rect = cropSourceImg.getBoundingClientRect();
+    const imgW = Math.round(rect.width);
+    const imgH = Math.round(rect.height);
+
+    if (imgW <= 10 || imgH <= 10) {
+      if (retry < 25) {
+        requestAnimationFrame(() => initCropBox(retry + 1));
+      }
+      return;
+    }
+
+    cropStage.style.width = `${imgW}px`;
+    cropStage.style.height = `${imgH}px`;
+
+    // WhatsApp-style square crop: fits the shorter side of the photo
+    const size = Math.min(imgW, imgH);
+    // Center the square by default
+    const x = Math.max(0, (imgW - size) / 2);
+    const y = Math.max(0, (imgH - size) / 2);
+
+    cropState = { imgW, imgH, size, x, y };
+    applyCropBoxStyle();
+  }
+
+  function applyCropBoxStyle() {
+    cropBox.style.width = `${Math.round(cropState.size)}px`;
+    cropBox.style.height = `${Math.round(cropState.size)}px`;
+    cropBox.style.left = `${Math.round(cropState.x)}px`;
+    cropBox.style.top = `${Math.round(cropState.y)}px`;
+    cropBox.style.transform = 'none';
+  }
+
+  if (cropCloseBtn) cropCloseBtn.addEventListener('click', closeCropModal);
+  if (cropCancelBtn) cropCancelBtn.addEventListener('click', closeCropModal);
+  if (cropModalBackdrop) cropModalBackdrop.addEventListener('click', closeCropModal);
+
+  // Default button in Cropper: reset square to center
+  if (cropDefaultBtn) {
+    cropDefaultBtn.addEventListener('click', () => {
+      cropState.x = Math.max(0, (cropState.imgW - cropState.size) / 2);
+      cropState.y = Math.max(0, (cropState.imgH - cropState.size) / 2);
+      applyCropBoxStyle();
+    });
+  }
+
+  // Pointer dragging for the square crop box
+  let isDraggingCrop = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let initCropBoxX = 0;
+  let initCropBoxY = 0;
+
+  cropBox.addEventListener('pointerdown', (e) => {
+    isDraggingCrop = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    initCropBoxX = cropState.x;
+    initCropBoxY = cropState.y;
+
+    cropBox.classList.add('is-dragging');
+    cropBox.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+
+  cropBox.addEventListener('pointermove', (e) => {
+    if (!isDraggingCrop) return;
+
+    const dx = e.clientX - dragStartX;
+    const dy = e.clientY - dragStartY;
+
+    const maxX = Math.max(0, cropState.imgW - cropState.size);
+    const maxY = Math.max(0, cropState.imgH - cropState.size);
+
+    cropState.x = Math.max(0, Math.min(maxX, initCropBoxX + dx));
+    cropState.y = Math.max(0, Math.min(maxY, initCropBoxY + dy));
+
+    applyCropBoxStyle();
+  });
+
+  function stopCropDrag(e) {
+    if (!isDraggingCrop) return;
+    isDraggingCrop = false;
+    cropBox.classList.remove('is-dragging');
+    if (e && e.pointerId && cropBox.hasPointerCapture(e.pointerId)) {
+      try {
+        cropBox.releasePointerCapture(e.pointerId);
+      } catch (err) {}
+    }
+  }
+
+  cropBox.addEventListener('pointerup', stopCropDrag);
+  cropBox.addEventListener('pointercancel', stopCropDrag);
+
+  // Clicking on crop stage outside cropBox snaps square to that position
+  cropStage.addEventListener('pointerdown', (e) => {
+    if (e.target === cropBox || cropBox.contains(e.target)) return;
+    const rect = cropStage.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    const half = cropState.size / 2;
+    const maxX = Math.max(0, cropState.imgW - cropState.size);
+    const maxY = Math.max(0, cropState.imgH - cropState.size);
+
+    cropState.x = Math.max(0, Math.min(maxX, clickX - half));
+    cropState.y = Math.max(0, Math.min(maxY, clickY - half));
+    applyCropBoxStyle();
+  });
+
+  // Re-adjust crop box if window resizes while modal is open
+  window.addEventListener('resize', () => {
+    if (!cropModal.classList.contains('hidden')) {
+      initCropBox();
+    }
+  });
+
+  // Done button in Crop Modal: extract square crop from original image via Canvas
+  if (cropDoneBtn) {
+    cropDoneBtn.addEventListener('click', () => {
+      const natW = cropSourceImg.naturalWidth;
+      const natH = cropSourceImg.naturalHeight;
+
+      if (!natW || !natH) {
+        closeCropModal();
+        return;
+      }
+
+      const imgW = cropState.imgW || cropSourceImg.offsetWidth || natW;
+      const scale = natW / imgW;
+
+      const size = cropState.size || Math.min(cropState.imgW || imgW, cropState.imgH || cropSourceImg.offsetHeight || natH);
+      const sx = Math.max(0, cropState.x * scale);
+      const sy = Math.max(0, cropState.y * scale);
+      const sSize = Math.min(size * scale, Math.min(natW, natH));
+
+      // High-resolution square output
+      const targetSize = Math.min(Math.round(sSize), 1200);
+      const canvas = document.createElement('canvas');
+      canvas.width = targetSize;
+      canvas.height = targetSize;
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
+      ctx.drawImage(cropSourceImg, sx, sy, sSize, sSize, 0, 0, targetSize, targetSize);
+
+      const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.94);
+
+      currentProfile.photoDataUrl = croppedDataUrl;
+      currentProfile.rawPhotoDataUrl = rawPhotoDataUrl;
+      currentProfile.zoom = 1.0;
+      currentProfile.offsetX = 0;
+      currentProfile.offsetY = 0;
+      photoZoomInput.value = 1.0;
+
+      dropzone.classList.add('has-photo');
+      dropzonePreviewImg.src = croppedDataUrl;
+      dropzonePreviewImg.style.transform = 'scale(1)';
+      dropzonePreviewImg.classList.remove('hidden');
+      dropzoneContent.classList.add('hidden');
+      if (dropzoneActiveOverlay) {
+        dropzoneActiveOverlay.classList.remove('hidden');
+      }
+      photoZoomControl.classList.remove('hidden');
+
+      mockPhotoImg.src = croppedDataUrl;
+      mockPhotoImg.style.transform = 'scale(1)';
+
+      closeCropModal();
+      showLiveFlyer();
+    });
+  }
+
+  // Dropzone button handlers
+  if (adjustCropBtn) {
+    adjustCropBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const source = currentProfile.rawPhotoDataUrl || rawPhotoDataUrl || currentProfile.photoDataUrl;
+      if (source) {
+        openCropModal(source);
+      }
+    });
+  }
+
+  if (changePhotoBtn) {
+    changePhotoBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      photoFileInput.click();
+    });
+  }
+
+  dropzone.addEventListener('click', (e) => {
+    if (e.target.closest('#adjustCropBtn') || e.target.closest('#changePhotoBtn')) return;
+    if (!currentProfile.photoDataUrl) {
+      photoFileInput.click();
+    }
+  });
 
   dropzone.addEventListener('dragover', (e) => {
     e.preventDefault();
@@ -243,18 +504,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      currentProfile.photoDataUrl = event.target.result;
-      currentProfile.zoom = 1.0;
-      photoZoomInput.value = 1.0;
-
-      dropzonePreviewImg.src = currentProfile.photoDataUrl;
-      dropzonePreviewImg.style.transform = 'scale(1)';
-      dropzonePreviewImg.classList.remove('hidden');
-      dropzoneContent.classList.add('hidden');
-      dropzoneChangeOverlay.classList.remove('hidden');
-      photoZoomControl.classList.remove('hidden');
-
-      showLiveFlyer();
+      openCropModal(event.target.result);
     };
     reader.readAsDataURL(file);
   }
@@ -355,19 +605,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function handleReset() {
     if (confirm('Clear your saved flyer details?')) {
       await window.profileStorage.clearProfile();
-      currentProfile = { name: '', role: '', photoDataUrl: null, zoom: 1.0 };
+      currentProfile = { name: '', role: '', photoDataUrl: null, rawPhotoDataUrl: null, zoom: 1.0 };
+      rawPhotoDataUrl = null;
       nameInput.value = '';
       roleInput.value = '';
       photoZoomInput.value = 1.0;
+      dropzone.classList.remove('has-photo');
       dropzonePreviewImg.src = '';
       dropzonePreviewImg.classList.add('hidden');
+      dropzonePreviewImg.style.transform = 'scale(1)';
       dropzoneContent.classList.remove('hidden');
-      dropzoneChangeOverlay.classList.add('hidden');
+      if (dropzoneActiveOverlay) {
+        dropzoneActiveOverlay.classList.add('hidden');
+      }
       photoZoomControl.classList.add('hidden');
       returnBanner.classList.add('hidden');
       emptyPlaceholder.classList.remove('hidden');
       liveFlyerMockup.classList.add('hidden');
       photoFileInput.value = '';
+      mockPhotoImg.src = 'assets/placeholder.svg';
+      mockPhotoImg.style.transform = 'scale(1)';
     }
   }
 

@@ -59,10 +59,15 @@
             <span class="dropzone-main-text">CLICK OR DROP A PHOTO</span>
             <span class="dropzone-sub-text">Square photos work best for status & stories</span>
           </div>
-          <!-- Uploaded Image Element -->
+          <!-- Uploaded Cropped Image Element -->
           <img id="dropzonePreviewImg" class="dropzone-preview-img hidden" alt="Uploaded photo">
-          <div id="dropzoneChangeOverlay" class="dropzone-change-overlay hidden">
-            <span class="dropzone-change-text">Change photo</span>
+          <!-- Overlay Actions when photo is loaded -->
+          <div id="dropzoneActiveOverlay" class="dropzone-active-overlay hidden">
+            <button type="button" id="adjustCropBtn" class="btn-dropzone-action" title="Adjust crop area">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"></path><path d="M18 22V8a2 2 0 0 0-2-2H2"></path></svg>
+              <span>Crop</span>
+            </button>
+            <button type="button" id="changePhotoBtn" class="btn-dropzone-action" title="Choose a different photo">Change</button>
           </div>
         </div>
         <input type="file" id="photoFileInput" accept="image/png, image/jpeg, image/webp">
@@ -71,7 +76,7 @@
         <div id="photoZoomControl" class="photo-zoom-control hidden">
           <label for="photoZoom">Photo Zoom</label>
           <input type="range" id="photoZoom" min="0.8" max="2.0" step="0.05" value="1.0">
-          <button type="button" id="resetZoomBtn" class="btn-reset-zoom" title="Reset to default fill">Default</button>
+          <button type="button" id="resetZoomBtn" class="btn-reset-zoom" title="Reset zoom to default">Default</button>
         </div>
 
         <!-- Name Input -->
@@ -197,6 +202,50 @@
   <footer class="site-footer">
     GritinAI Connect 2.0 · September 26, 2026 · Victor Uwaifo Hub, Benin City
   </footer>
+
+  <!-- WhatsApp-Style Photo Cropper Modal -->
+  <div id="cropModal" class="crop-modal hidden" role="dialog" aria-modal="true" aria-labelledby="cropModalTitle">
+    <div class="crop-modal-backdrop" id="cropModalBackdrop"></div>
+    <div class="crop-modal-card">
+      <div class="crop-modal-header">
+        <div class="crop-modal-title-wrap">
+          <span class="crop-modal-sub">VOLUNTEER PHOTO</span>
+          <h3 id="cropModalTitle" class="crop-modal-title">CROP PHOTO</h3>
+        </div>
+        <button type="button" id="cropCloseBtn" class="crop-modal-close" title="Close">✕</button>
+      </div>
+
+      <div class="crop-modal-instruction">
+        Drag the square to choose which area of the photo to show
+      </div>
+
+      <div class="crop-modal-body">
+        <div id="cropStage" class="crop-stage">
+          <img id="cropSourceImg" class="crop-source-img" alt="Source photo to crop">
+          <div id="cropBox" class="crop-box">
+            <!-- 3x3 Grid Lines -->
+            <div class="crop-grid-line crop-grid-h1"></div>
+            <div class="crop-grid-line crop-grid-h2"></div>
+            <div class="crop-grid-line crop-grid-v1"></div>
+            <div class="crop-grid-line crop-grid-v2"></div>
+            <!-- Corner Brackets -->
+            <div class="crop-bracket crop-bracket-tl"></div>
+            <div class="crop-bracket crop-bracket-tr"></div>
+            <div class="crop-bracket crop-bracket-bl"></div>
+            <div class="crop-bracket crop-bracket-br"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="crop-modal-footer">
+        <button type="button" id="cropDefaultBtn" class="btn-crop-default" title="Reset square to default center">Default</button>
+        <div class="crop-modal-actions">
+          <button type="button" id="cropCancelBtn" class="btn-crop-cancel">Cancel</button>
+          <button type="button" id="cropDoneBtn" class="btn-crop-done">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Scripts -->
   <script src="js/storage.js"></script>
