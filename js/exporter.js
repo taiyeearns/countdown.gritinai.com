@@ -309,13 +309,37 @@ class FlyerExporter {
     }
 
     // 4. Plain White Countdown Text (Space Grotesk, bold white, prominent with more space)
-    const countdownText = status.isEventDay
-      ? "TODAY'S THE DAY!"
-      : (status.isPast ? "GRITINAI CONNECT 2.0" : `${status.days} DAYS TO GO`);
+    let countdownText;
+    let fontSize = 50;
+    let letterSpacing = '4px';
 
-    ctx.font = '700 50px "Space Grotesk", system-ui, sans-serif';
+    if (status.isEventDay) {
+      countdownText = 'HAPPENING TODAY, LIVE AT THE AI CONFERENCE';
+      fontSize = 32;
+      letterSpacing = '1.5px';
+    } else if (status.isPast) {
+      countdownText = 'GRITINAI CONNECT 2.0';
+    } else if (status.days === 1) {
+      countdownText = '1 DAY TILL THE EVENT';
+      fontSize = 46;
+      letterSpacing = '3px';
+    } else {
+      countdownText = `${status.days} DAYS TO GO`;
+    }
+
+    ctx.font = `700 ${fontSize}px "Space Grotesk", system-ui, sans-serif`;
     ctx.fillStyle = '#FFFFFF';
-    ctx.letterSpacing = '4px';
+    ctx.letterSpacing = letterSpacing;
+
+    // Safety auto-fit check: ensure text fits within max printable area (960px)
+    const maxTextWidth = 960;
+    let measuredWidth = ctx.measureText(countdownText).width;
+    while (measuredWidth > maxTextWidth && fontSize > 18) {
+      fontSize -= 1;
+      ctx.font = `700 ${fontSize}px "Space Grotesk", system-ui, sans-serif`;
+      measuredWidth = ctx.measureText(countdownText).width;
+    }
+
     ctx.fillText(countdownText, centerX, 995);
 
     // 5. Venue & Date (Right above bottom divider line at 1145)

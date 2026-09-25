@@ -104,17 +104,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   function updateCountdownUI() {
     const status = window.countdownEngine.getStatus();
 
-    if (status.isEventDay) {
-      if (mockCountdownBadgeText) {
-        mockCountdownBadgeText.textContent = "TODAY'S THE DAY!";
-      }
-    } else if (status.isPast) {
-      if (mockCountdownBadgeText) {
+    if (mockCountdownBadgeText) {
+      if (status.isEventDay) {
+        mockCountdownBadgeText.textContent = "HAPPENING TODAY, LIVE AT THE AI CONFERENCE";
+        mockCountdownBadgeText.classList.add('event-day');
+      } else if (status.isPast) {
         mockCountdownBadgeText.textContent = "GRITINAI CONNECT 2.0";
-      }
-    } else {
-      if (mockCountdownBadgeText) {
+        mockCountdownBadgeText.classList.remove('event-day');
+      } else if (status.days === 1) {
+        mockCountdownBadgeText.textContent = "1 DAY TILL THE EVENT";
+        mockCountdownBadgeText.classList.remove('event-day');
+      } else {
         mockCountdownBadgeText.textContent = `${status.days} DAYS TO GO`;
+        mockCountdownBadgeText.classList.remove('event-day');
       }
     }
   }
@@ -585,10 +587,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         .replace(/[^a-z0-9]/g, '-');
       const filename = `connect2-volunteer-day${status.days}-${sanitizedName}.png`;
 
+      const shareTitle = `GritinAI Connect 2.0 - ${status.headline}`;
+      const shareText = status.isEventDay
+        ? `GritinAI Connect 2.0 is happening today, live at the AI conference! Join me at Victor Uwaifo Hub, Benin City.`
+        : `Counting down to GritinAI Connect 2.0! ${status.headline} at Victor Uwaifo Hub, Benin City.`;
+
       const shared = await window.flyerExporter.shareDataUrl(
         dataUrl,
-        `GritinAI Connect 2.0 - ${status.headline}`,
-        `Counting down to GritinAI Connect 2.0! ${status.headline} at Victor Uwaifo Hub, Benin City.`,
+        shareTitle,
+        shareText,
         filename
       );
 

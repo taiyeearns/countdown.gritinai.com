@@ -54,8 +54,8 @@ class CountdownEngine {
         type: 'countdown',
         days: 1,
         numberDisplay: '1',
-        label: 'DAY TO GO',
-        headline: '1 Day to Go',
+        label: '1 DAY TILL THE EVENT',
+        headline: '1 Day till the Event',
         subline: 'Tomorrow is the big day! Get ready.',
         isEventDay: false,
         isPast: false
@@ -65,8 +65,8 @@ class CountdownEngine {
         type: 'event_day',
         days: 0,
         numberDisplay: 'DAY 0',
-        label: "IT'S HAPPENING TODAY",
-        headline: "Today's the Day!",
+        label: "HAPPENING TODAY, LIVE AT THE AI CONFERENCE",
+        headline: "Happening Today, Live at the AI Conference",
         subline: 'See you there! Let’s make history.',
         isEventDay: true,
         isPast: false

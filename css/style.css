@@ -669,12 +669,21 @@ body {
 /* Plain White Countdown Text - moved slightly down with more space & increased font size */
 .flyer-countdown-text {
   font-family: var(--font-heading);
-  font-size: 24px;
+  font-size: 21px;
   font-weight: 700;
   color: #FFFFFF;
-  letter-spacing: 2.5px;
+  letter-spacing: 1.8px;
   text-transform: uppercase;
   margin: 14px 0 8px;
+  line-height: 1.25;
+  text-align: center;
+  max-width: 100%;
+}
+
+.flyer-countdown-text.event-day {
+  font-size: 14.5px;
+  letter-spacing: 1px;
+  line-height: 1.35;
 }
 
 /* Venue Line - Shifted slightly lower, close to bottom line */
